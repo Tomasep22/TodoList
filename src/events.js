@@ -1,6 +1,3 @@
-import tasksModule from './tasks.js'
-import domModule from './index.js'
-
 const eventsModule = (function(){
     let events = {};
 
@@ -10,8 +7,16 @@ const eventsModule = (function(){
     }
 
     function emit (eventName, data) {
-        if(events[eventName]) {
+        let x = false
+        if(arguments.length > emit.length) {
+            data = [...arguments].slice(1)
+            x = true
+        }
+        if(events[eventName] && !x) {
             events[eventName].forEach(fn => fn(data))
+        }
+        if(events[eventName] && x) {
+            events[eventName].forEach(fn => fn(...data))
         }
     }
 
@@ -20,6 +25,5 @@ const eventsModule = (function(){
         emit
     }
 }());
-
 
 export default eventsModule

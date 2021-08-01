@@ -1,66 +1,60 @@
-import Tasks from './tasks.js'
-import Projects from './projects.js'
 import Events from './events.js'
+import Tasks from './tasks.js'
+import projects from './projects.js'
+import Style from './style.css'
 
 const domModule = (function() {
 
-// DOM STUFF
-    
-    let displaying = 'inbox';
-    
-// hay que hacer display el project que tiene title = a displaying
+    let userProjects = [];
+    let coreProjects = [];
 
     // CONTENT
     const content = document.createElement('div');
     content.id = 'content';
     document.body.appendChild(content);
+    const nav = document.createElement('nav');
+    nav.id = 'nav';
+    content.appendChild(nav);
 
+    const coreProjectsDiv = document.createElement('div');
+    coreProjectsDiv.classList.add('core-projects');
+    nav.appendChild(coreProjectsDiv);
 
-    const project = document.createElement('div');
-    project.id = displaying;
-    content.appendChild(project);
-    const projectList = document.createElement('ul');
-    project.appendChild(projectList)
-    displayTasks(projectList);
-   
-    // display tasks with remove button on DOM
-    function displayTasks(list = projectList) {
-        const tasksDOM = Tasks.getTasks()
-        list.innerHTML = tasksDOM.map((task, index) => {
-            if(task.project !== displaying) return
-            return `
-            <li style="display: inline" data-idx="${index}">${task.title}</li>
-            <button data-idx="${index}" class="remove">Remove Task</button>
-            `
-        }).join('');
+    const userProjectsDiv = document.createElement('div');
+    userProjectsDiv.classList.add('user-projects');
+    nav.appendChild(userProjectsDiv);
 
-        const rmButtons = document.querySelectorAll('.remove');
-        rmButtons.forEach(btn => btn.onclick = removeTaskDom)
+    Events.on('deliverUserProjects', updateUserProjects);
+    Events.on('deliverCoreProjects', updateCoreProjects);
+
+    function updateCoreProjects(projects) {
+        coreProjects = projects
     }
 
-    Events.on('tasksChanged', displayTasks);
-
-    // button for adding tasks to DOM
-    
-    const button = document.createElement('button');
-    content.appendChild(button);
-    button.textContent = 'Add new task';
-    button.onclick = CreateTask;
-
-
-    function CreateTask() {
-        const title = prompt('task title');
-        Events.emit('createTask', title);
-        Events.emit('tasksChanged', projectList);
+    function updateUserProjects(projects) {
+        userProjects = projects
     }
+    Events.emit('updateCoreProjects');
+    Events.emit('updateCoreProjects');
 
-    // Remove task DOM
-    
-    function removeTaskDom() {
-        const index = parseInt(this.dataset.idx);
-        Events.emit('removeTask', index);
-        Events.emit('tasksChanged', projectList);
+    // populate nav
+    function populateNavDiv(node, projects) {
+        console.log(projects)
+        Events.emit('updateCoreProjects');
+        Events.emit('updateUserProjects');
+        console.log(projects)
+
+        node.innerHTML = ''
+        node.innerHTML = projects.map(project => {
+            return `<button>${project.title}</button>`
+        }).join('')
     }
+    populateNavDiv(coreProjectsDiv, coreProjects);
+    populateNavDiv(userProjectsDiv, userProjects);
+
+    // display project
+
+    // display tasks
 
     return {
     }

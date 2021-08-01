@@ -1,0 +1,72 @@
+
+
+html {
+    min-height: 100%;
+    font-size: 50%;
+    line-height: 1.5;
+}
+
+body {
+    margin: 0;
+}
+
+/*body.edit-task .edit-form {
+    display: flex;
+}*/
+
+#content {
+    display: flex;
+    min-height: 100vh;
+    font-size: 3em;
+}
+
+#nav {
+    flex: 1;
+    max-width: 300px;
+    background-color: burlywood;
+    display: flex;
+    flex-direction: column;
+}
+
+.core-projects {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-projects {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+button {
+    max-height: 50px;
+    max-width: 100px;
+}
+
+/*
+.project {
+    flex: 3;
+    background-color: darkkhaki;
+    display: flex;
+    flex-direction: column;
+}
+
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.edit-form {
+    display: none;
+    position: absolute;
+    height: 400px;
+    width: 400px;
+    margin: 0 auto;
+    background-color: chocolate;
+    flex-direction: column;
+    left: 40%;
+    top: 20%
+}
+*/
