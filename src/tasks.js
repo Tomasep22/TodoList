@@ -1,6 +1,7 @@
 import Events from './events.js'
 
 const taskFactory = (title, project = 'inbox') => {
+  title = prompt('title', 'task1');
     return {
         title,
         project
@@ -10,9 +11,15 @@ const taskFactory = (title, project = 'inbox') => {
 const tasksModule = (function(){
     let tasks = [{title:'task1', priority: 'low', done: true, project:'project1'},{title:'task2', priority:'high', done: false, project:'inbox'}];
 
-  
-  function addTask(title) {
-      const task = taskFactory(title);
+  Events.on('updateTasks', getTasks);
+  Events.on('createTask', addTask);
+
+  function getTasks() {
+    Events.emit('deliverTasks', tasks.slice());
+  }
+
+  function addTask() {
+      const task = taskFactory();
       tasks.push(task);
   }
 
