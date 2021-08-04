@@ -2,7 +2,9 @@ import Events from './events.js'
 import Tasks from './tasks.js'
 import projects from './projects.js'
 import Style from './style.css'
-import { formatDistance, subDays, differenceInCalendarDays } from 'date-fns'
+import { formatDistance, subDays, differenceInCalendarDays, parseISO, format } from 'date-fns'
+
+console.log(subDays(new Date(), -1))
 
 const domModule = (function() {
 
@@ -31,6 +33,11 @@ const domModule = (function() {
     const projectDiv = document.createElement('div');
     projectDiv.classList.add('project');
     content.appendChild(projectDiv);
+
+    const addProjectBtn = document.createElement('button');
+    addProjectBtn.textContent = 'Add New Project';
+    addProjectBtn.classList.add('add-project');
+    content.appendChild(addProjectBtn);
 
     Events.on('deliverUserProjects', updateUserProjects);
     Events.on('deliverCoreProjects', updateCoreProjects);
@@ -62,17 +69,34 @@ const domModule = (function() {
 
     function populateNavDiv(node, projects) {
         updateProjects();
-
         node.innerHTML = projects.map((project, index) => {
-            return `<button data-idx="${index}" class="nav-btn">${project.title}</button>`
+            if(project.type === 'user') console.log('user')
+            return `
+            <div class="${project.type}-project-nav">
+            <button data-idx="${index}" class="nav-project-btn">${project.title}</button>
+            ${project.type === 'user' ? `<button data-idx="${index}" class="rm-project-btn">remove</button>` : ""}
+            </div>
+            `
         }).join('');
 
-        const navButtons = node.querySelectorAll('.nav-btn');
+        const navButtons = node.querySelectorAll('.nav-project-btn');
         navButtons.forEach(btn => btn.addEventListener('click', function() {
             const index = parseInt(this.dataset.idx);
-            const project = projects[index];
+            const project = projects.slice()[index];
             populateProject(project, projectDiv);
         }));
+
+        const rmButtons = node.querySelectorAll('.rm-project-btn')
+        if(rmButtons.length > 0) {
+            rmButtons.forEach(btn => btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.idx);
+                const deleteProject = projects.slice()[index];
+                removeProject(deleteProject);
+                updateProjects();
+                removeDeletedProjectTasks(deleteProject, tasks)
+                populateNavDiv(node, userProjects);
+            }))
+        }
     }
 
     populateNavDiv(coreProjectsDiv, coreProjects);
@@ -86,41 +110,163 @@ const domModule = (function() {
         const title = document.createElement('h1');
         title.textContent = project.title;
         projectNode.appendChild(title);
-        
+
         const description = document.createElement('p');
-        // description.textcontent = project.description
+        if('description' in project) description.textContent = project.description
         projectNode.appendChild(description);
 
         const tasksDiv = document.createElement('div');
+        tasksDiv.classList.add('project-tasks');
         projectNode.appendChild(tasksDiv);
 
-        populateTasks(tasksDiv);
-        addTaskbtn(projectNode);
+        populateTasks(tasksDiv, project, tasks);
 
-        // display tasks that belong to this project logic
+        if(!('addTaskBtn' in project)) addTaskbtn(projectNode, project, tasksDiv);
+
     }
 
-    function populateTasks(node) {
-        console.log(tasks)
-        console.log(differenceInCalendarDays(Date.now(), new Date('2021,08,08')))
-    }
+    populateProject(coreProjects[0], projectDiv);
 
-    function addTaskbtn(node) {
-        const btn = document.createElement('button');;
-        btn.textContent = 'Add new Task';
-        node.appendChild(btn);
-        btn.onclick = createTask;
-    }
-
-    function createTask() {
-        Events.emit('createTask');
+    function populateTasks(node, project, tasksArr) {
         updateTasks();
-        console.log(tasks);
+        node.innerHTML = '';
+        node.innerHTML = tasksArr.map((task, index) => {
+            if(project.displayRule(task) === false) return
+            let title = task.title;
+            if(task.repeated > 0) title += `(${task.repeated})`
+            if(project.type === 'core' && project.title !== 'inbox') {
+                const taskproject = task.project;
+                title += ' (' + taskproject + ')'
+            }
+            return `
+            <label class="task" for="task${index}"><input id="task${index}" type="checkbox" name="tasks" value="${task.title}">${'date' in task ? '<p>' + task.formatDate() + '</p>' : ''}<p style="display: inline">${title}</p>
+            <button data-idx="${index}" class="rm-task-btn">Remove</button>
+            <button data-idx="${index}" class="edit-task-btn">Edit</button>
+            </label>
+            `
+        }).join('');
+
+        const rmButtons = node.querySelectorAll('.rm-task-btn');
+        rmButtons.forEach(btn => btn.addEventListener('click', function(){
+            const index = parseInt(this.dataset.idx);
+            const task = tasks.slice()[index]
+            removeTask(task)
+            populateTasks(node, project, tasks);
+        }));
+
+        const editButtons = node.querySelectorAll('.edit-task-btn');
+        editButtons.forEach(btn => btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.idx);
+            editTaskForm(tasks.slice()[index], node, project);
+        }))
     }
 
-    // display project
+    function addTaskbtn(projectNode, project, tasksNode) {
+        const btn = document.createElement('button');
+        btn.classList.add('add-task-btn','active');
+        btn.textContent = 'Add new Task';
+        projectNode.appendChild(btn);
 
-    // display tasks
+        const form = document.createElement('form');
+        form.classList.add('add-task-input');
+        form.innerHTML = `<input name="newTaskTitle" type="text" placeholder="Task Title" value="New Task">`
+        projectNode.appendChild(form);
+
+        btn.addEventListener('click', function() {
+            form.classList.add('active')
+            btn.classList.remove('active');
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = this.newTaskTitle.value;
+            createTask(project.title, title);
+            form.classList.remove('active');
+            btn.classList.add('active');
+            populateTasks(tasksNode, project, tasks);
+        });
+    }
+
+    function createTask(project, title) {
+        Events.emit('createTask', {project, title});
+        updateTasks();
+        console.log(tasks)
+    }
+
+    function removeTask(task) {
+        Events.emit('removeTask', task);
+        updateTasks();
+    }
+
+    function createProject() {
+        Events.emit('createProject');
+        updateProjects();
+        populateNavDiv(userProjectsDiv, userProjects);
+    }
+
+    function removeProject(project) {
+        Events.emit('removeProject', project);
+        updateProjects();
+    }
+
+    function removeDeletedProjectTasks(deleted, tasks) {
+        if(tasks.length > 0) {
+        return  tasks.map((task) => {
+                if(task.project !== deleted.title) return
+                removeTask(task);
+            });
+        }
+    }
+
+    function cancelTaskEdit(form) {
+        form.reset();
+        document.body.classList.remove('edit-task');
+    }
+
+    function editTaskForm(task, node, currentProject) {
+        const editForm = document.createElement('form');
+        editForm.classList.add('edit-form');
+        document.body.classList.add('edit-task');
+        let dateValue = false;
+        if('date' in task) dateValue = formatDate(task.date);
+        editForm.innerHTML = `
+        <p>Title: <input type="text" name="titleinput" placeholder="Title" value="${task.title}" required></p>
+        <select name="projectselect"><option value="${task.project}">${task.project}</option>${populateProjectSelect(userProjects, task.project)}</select>
+        <p>Due-date: <input type="date" name="dateinput" value="${dateValue ? dateValue : ''}"></p>
+        <div>
+        <button type="submit" name="submitbtn">Edit</button>
+        <button name="cancelbtn">Cancel</button>
+        </div>`
+        content.appendChild(editForm);
+        editForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            if(e.submitter === editForm.cancelbtn) return cancelTaskEdit(editForm)
+            const title = this.titleinput.value;
+            const project = this.projectselect.value;
+            let date = this.dateinput.value;
+            date = handleDateInput(date);
+            Events.emit('editTask', task, {title, project, date});
+            populateTasks(node, currentProject, tasks);
+            document.body.classList.remove('edit-task');
+        });
+    }
+
+    function populateProjectSelect(projects, current) {
+        return projects.map(project => {
+            if(project.title === current) return
+            return `<option value=${project.title}>${project.title}</option>`
+        }).join('');
+    }
+
+    function handleDateInput(date) {
+        return new Date(date.replaceAll('-',','));
+    }
+
+    function formatDate(date) {
+        return format(date, 'yyyy-MM-dd');
+    }
+
+    addProjectBtn.addEventListener('click', createProject);
 
     return {
     }
