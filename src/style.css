@@ -21,24 +21,40 @@ body.edit-task .edit-form {
 #nav {
     flex: 1;
     max-width: 300px;
-    background-color: burlywood;
+    background-color: #FCF6BD;
+    background-color: #D0F4DE;
     display: flex;
     flex-direction: column;
+}
+
+.myprojects-heading {
+    align-self: center;
+}
+
+.project-icon {
+    flex: 0.1;
 }
 
 .nav-project-btn {
     max-width: 100%;
     flex: 1;
+    background-color: transparent;
+    border: none;
+    text-align: start;
 }
 
 .rm-project-btn {
     max-width: 100%;
-    flex: 0.2
+    flex: 0.2;
+    background-color: transparent;
+    border: none;
+    color: red;
 }
 
 .core-projects {
     display: flex;
     flex-direction: column;
+    margin-top: 10px;
 }
 
 .user-projects {
@@ -49,10 +65,18 @@ body.edit-task .edit-form {
 
 .user-project-nav {
     display: flex;
+    margin-left: 20px;
 }
 
 .core-project-nav {
     display: flex;
+    margin: 5px;
+    margin-left: 20px;
+}
+
+.add-project {
+    align-self: center;
+    margin-top: 10px;
 }
 
 button {
@@ -63,7 +87,8 @@ button {
 
 .project {
     flex: 3;
-    background-color: darkkhaki;
+    background-color: #D0F4DE;
+    background-color: #FCF6BD;
     display: flex;
     flex-direction: column;
 }
@@ -78,6 +103,20 @@ button {
     display: flex;
     text-align: center;
     align-items: center;
+}
+
+.rm-task-btn {
+    background-color: transparent;
+    border: none;
+    color: red;
+    font-size: 25px;
+}
+
+.edit-task-btn {
+    background-color: transparent;
+    border: none;
+
+    font-size: 25px;
 }
 
 p {
@@ -107,8 +146,12 @@ p {
     height: 400px;
     width: 400px;
     margin: 0 auto;
-    background-color: chocolate;
+    background-color: #A9DEF9;
     flex-direction: column;
     left: 40%;
     top: 20%
+}
+
+.submit-edit-btn {
+    align-self: center;
 }

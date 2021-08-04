@@ -1,9 +1,9 @@
 import Events from './events.js'
 import projects from './projects.js';
-import { formatDistance, subDays, differenceInCalendarDays, parseISO, format } from 'date-fns'
+import { format } from 'date-fns'
 
 const tasksModule = (function(){
-    let tasks = [{title:'task1', priority: 'low', done: true, project:'project1'},{title:'task2', priority:'high', done: false, project:'Inbox', date: new Date('2021,08,08'), formatDate: function() {return format(this.date, 'd. MMM')}}];
+    let tasks = [{title:'task1', priority: 'low', done: true, project:'project1', formatDate: function() {return format(this.date, 'd. MMM')}},{title:'task2', priority:'high', done: false, project:'Inbox', date: new Date('2021,08,08'), formatDate: function() {return format(this.date, 'd. MMM')}}];
 
   Events.on('updateTasks', deliverTasks);
   Events.on('createTask', addTask);
@@ -32,6 +32,7 @@ const tasksModule = (function(){
     const taskIndex = tasks.findIndex(t => t === task);
     Object.assign(tasks[taskIndex], obj);
   }
+  
   return {
     getTasks
   }
@@ -39,18 +40,39 @@ const tasksModule = (function(){
 }())
 
 const taskFactory = (title, project) => {
-  const arr = tasksModule.getTasks()
-  const repeated = arr.reduce((count, task) => {
-    if(task.title === title && task.project === project) count++
-    return count
-  },0);
+  const arr = tasksModule.getTasks();
+  
+  function repeat(title, project) {
+    return arr.reduce((count, task) => {
+      if(task.title === title && task.project === project) count++
+      return count
+    },0);
+  }
+
+  let count = repeat(title, project)
+  
+  function updateTitle(taskTitle, projectTitle) {
+    const repeated = repeat(taskTitle, projectTitle)
+    if (repeated < 1) {
+      title = taskTitle
+      return
+    }
+    
+    let newTitle = taskTitle
+    newTitle = title + `(${count})`
+    count++
+    updateTitle(newTitle, project)
+  }
+
+  updateTitle(title, project);
+
   function formatDate() {
     return format(this.date, 'd.MMM')
   }
   return {
     title,
     project,
-    repeated,
+    formatDate
   };
 };
 

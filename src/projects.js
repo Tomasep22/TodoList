@@ -1,28 +1,17 @@
 import Events from './events.js'
-import { formatDistance, subDays, differenceInCalendarDays, parseISO } from 'date-fns'
-
-// projects factory
-
-const projectFactory = (title, description, folder) => {
-    title = prompt('title', 'project2');
-    description = prompt('description', 'project2 description');
-    const type = 'user'
-    function displayRule(task) {
-      return task.project === this.title ? true : false
-    }
-    return {
-       title,
-       description,
-       displayRule,
-       type
-    };
-  };
+import { subDays, differenceInCalendarDays } from 'date-fns'
+import Inbox from './img/inbox.png'
+import Today from './img/calendar.png'
+import Tomorrow from './img/tomorrow.png'
+import Nextweek from './img/next-week.png'
+import Todolist from './img/to-do-list.png'
 
   const projectsModule = (function(){
 
     const COREPROJECTS = [
     {
       title:'Inbox',
+      icon: Inbox,
       displayRule: function(task){
         if(task.project === this.title) {
           return true 
@@ -34,6 +23,7 @@ const projectFactory = (title, description, folder) => {
     },
     {
       title: 'Today',
+      icon: Today,
       get date() {
       return subDays(new Date(), 0)
       },
@@ -51,6 +41,7 @@ const projectFactory = (title, description, folder) => {
     },
     {
       title: 'Tomorrow',
+      icon: Tomorrow,
       get date() {
         return subDays(new Date(), -1)
         },
@@ -68,6 +59,7 @@ const projectFactory = (title, description, folder) => {
     },
     {
       title:'This Week',
+      icon: Nextweek,
       get date() {
         return subDays(new Date(), -7)
       },
@@ -84,7 +76,7 @@ const projectFactory = (title, description, folder) => {
       type: 'core'
     }];
 
-    let userProjects = [{title: 'project1', displayRule: function(task){
+    let userProjects = [{title: 'project1', icon: Todolist, displayRule: function(task){
       return task.project === this.title ? true : false
     },
     type: 'user'}];
@@ -114,8 +106,57 @@ const projectFactory = (title, description, folder) => {
      userProjects = [...userProjects.slice(0, index), ...userProjects.slice(index + 1)];
     }
 
+    function gUserProjects() {
+      return userProjects.slice()
+    }
   return {
+    gUserProjects
   }
 }())
+
+const projectFactory = (title, description) => {
+
+  title = prompt('title', 'project2');
+  icon = Todolist
+  description = prompt('description', 'project2 description');
+  const type = 'user'
+  function displayRule(task) {
+    return task.project === this.title ? true : false
+  }
+
+const arr = projectsModule.gUserProjects();
+
+function repeat(title) {
+  return arr.reduce((count, project) => {
+    if(project.title === title) count++
+    return count
+  },0);
+}
+
+let count = repeat(title)
+
+function updateTitle(projectTitle) {
+  const repeated = repeat(projectTitle)
+  if (repeated < 1) {
+    title = projectTitle
+    return
+  }
+  
+  let newTitle = projectTitle
+  newTitle = title + `(${count})`
+  count++
+  updateTitle(newTitle)
+}
+
+updateTitle(title);
+
+  return {
+     title,
+     icon,
+     description,
+     displayRule,
+     type
+  };
+};
 
 export default projectsModule.projects 
