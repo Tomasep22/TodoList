@@ -32,7 +32,7 @@ const tasksModule = (function(){
     const taskIndex = tasks.findIndex(t => t === task);
     Object.assign(tasks[taskIndex], obj);
   }
-  
+
   return {
     getTasks
   }
@@ -40,31 +40,6 @@ const tasksModule = (function(){
 }())
 
 const taskFactory = (title, project) => {
-  const arr = tasksModule.getTasks();
-  
-  function repeat(title, project) {
-    return arr.reduce((count, task) => {
-      if(task.title === title && task.project === project) count++
-      return count
-    },0);
-  }
-
-  let count = repeat(title, project)
-  
-  function updateTitle(taskTitle, projectTitle) {
-    const repeated = repeat(taskTitle, projectTitle)
-    if (repeated < 1) {
-      title = taskTitle
-      return
-    }
-    
-    let newTitle = taskTitle
-    newTitle = title + `(${count})`
-    count++
-    updateTitle(newTitle, project)
-  }
-
-  updateTitle(title, project);
 
   function formatDate() {
     return format(this.date, 'd.MMM')

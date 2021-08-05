@@ -1,5 +1,5 @@
 import Events from './events.js'
-import { subDays, differenceInCalendarDays } from 'date-fns'
+import { subDays, differenceInCalendarDays, differenceInCalendarWeeks, nextSunday } from 'date-fns'
 import Inbox from './img/inbox.png'
 import Today from './img/calendar.png'
 import Tomorrow from './img/tomorrow.png'
@@ -29,10 +29,8 @@ import Todolist from './img/to-do-list.png'
       },
       displayRule: function(task) {
         if(differenceInCalendarDays(this.date, task.date) === 0) {
-          console.log(true, 'display on today');
           return true
         } else {
-          console.log(false, 'dont display on today');
           return false
         }
       },
@@ -47,10 +45,8 @@ import Todolist from './img/to-do-list.png'
         },
         displayRule: function(task) {
           if(differenceInCalendarDays(this.date, task.date) === 0) {
-            console.log(true, 'display on tomorrow');
             return true
           } else {
-            console.log(false, 'dont display on tomorrow');
             return false
           }
         },
@@ -61,14 +57,12 @@ import Todolist from './img/to-do-list.png'
       title:'This Week',
       icon: Nextweek,
       get date() {
-        return subDays(new Date(), -7)
+        return nextSunday(new Date());
       },
       displayRule: function(task) {
-        if(differenceInCalendarDays(this.date, task.date) >= 0) {
-            console.log(true, 'display on this week');
+        if(differenceInCalendarWeeks(this.date, task.date, { weekStartsOn: 1}) === 0) {
             return true
         } else {
-            console.log(false, 'dont display on this week');
             return false
         }
       },
@@ -96,8 +90,8 @@ import Todolist from './img/to-do-list.png'
       Events.emit('deliverCoreProjects', projects);
     }
 
-    function addProject () {
-       const project = projectFactory();
+    function addProject (title) {
+       const project = projectFactory(title);
        userProjects.push(project);
     }
 
@@ -114,11 +108,9 @@ import Todolist from './img/to-do-list.png'
   }
 }())
 
-const projectFactory = (title, description) => {
+const projectFactory = (title) => {
 
-  title = prompt('title', 'project2');
-  icon = Todolist
-  description = prompt('description', 'project2 description');
+  const icon = Todolist
   const type = 'user'
   function displayRule(task) {
     return task.project === this.title ? true : false
@@ -153,7 +145,6 @@ updateTitle(title);
   return {
      title,
      icon,
-     description,
      displayRule,
      type
   };

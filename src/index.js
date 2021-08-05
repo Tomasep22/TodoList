@@ -33,8 +33,13 @@ const domModule = (function() {
 
     const addProjectBtn = document.createElement('button');
     addProjectBtn.textContent = '➕ Project';
-    addProjectBtn.classList.add('add-project');
+    addProjectBtn.classList.add('add-project','active');
     nav.appendChild(addProjectBtn);
+
+    const projectForm = document.createElement('form');
+    projectForm.classList.add('add-project-form');
+    projectForm.innerHTML = `<input class="add-project-input" name="newProjectTitle" type="text" placeholder="Project Title" value="New Project" required>`
+    nav.appendChild(projectForm);
 
     const projectDiv = document.createElement('div');
     projectDiv.classList.add('project');
@@ -105,16 +110,11 @@ const domModule = (function() {
 
     function populateProject(project, projectNode) {
 
-        console.log(project);
         projectNode.innerHTML = '';
 
         const title = document.createElement('h1');
         title.textContent = project.title;
         projectNode.appendChild(title);
-
-        const description = document.createElement('p');
-        if('description' in project) description.textContent = project.description
-        projectNode.appendChild(description);
 
         const tasksDiv = document.createElement('div');
         tasksDiv.classList.add('project-tasks');
@@ -139,9 +139,14 @@ const domModule = (function() {
                 title += ' (' + taskproject + ')'
             }
             return `
-            <label class="task" for="task${index}"><input id="task${index}" type="checkbox" name="tasks" value="${task.title}">${'date' in task ? '<p>' + task.formatDate() + '</p>' : ''}<p style="display: inline">${title}</p>
+            <label class="task" for="task${index}">
+            <input id="task${index}" type="checkbox" name="tasks" value="${task.title}">
+            <div class="task-title-date">${'date' in task ? '<p class="task-date">' + task.formatDate() + '</p>' : ''}<p class="task-title" style="display: inline">${title}</p>
+            </div>
+            <div class="task-btns">
             <button data-idx="${index}" class="rm-task-btn">❌</button>
             <button data-idx="${index}" class="edit-task-btn">🖉</button>
+            </div>
             </label>
             `
         }).join('');
@@ -168,8 +173,8 @@ const domModule = (function() {
         projectNode.appendChild(btn);
 
         const form = document.createElement('form');
-        form.classList.add('add-task-input');
-        form.innerHTML = `<input name="newTaskTitle" type="text" placeholder="Task Title" value="New Task">`
+        form.classList.add('add-task-form');
+        form.innerHTML = `<input class="add-task-input" name="newTaskTitle" type="text" placeholder="Task Title" value="New Task" required>`
         projectNode.appendChild(form);
 
         btn.addEventListener('click', function() {
@@ -190,7 +195,6 @@ const domModule = (function() {
     function createTask(project, title) {
         Events.emit('createTask', {project, title});
         updateTasks();
-        console.log(tasks)
     }
 
     function removeTask(task) {
@@ -198,8 +202,8 @@ const domModule = (function() {
         updateTasks();
     }
 
-    function createProject() {
-        Events.emit('createProject');
+    function createProject(title) {
+        Events.emit('createProject', title);
         updateProjects();
         populateNavDiv(userProjectsDiv, userProjects);
     }
@@ -243,9 +247,13 @@ const domModule = (function() {
             if(e.submitter === editForm.cancelbtn) return cancelTaskEdit(editForm)
             const title = this.titleinput.value;
             const project = this.projectselect.value;
-            let date = this.dateinput.value;
+            let date = this.dateinput.value || null;
+            if(typeof(date) === 'string') {
             date = handleDateInput(date);
             Events.emit('editTask', task, {title, project, date});
+        } else {
+            Events.emit('editTask', task, {title, project});
+        }
             populateTasks(node, currentProject, tasks);
             document.body.classList.remove('edit-task');
         });
@@ -266,7 +274,18 @@ const domModule = (function() {
         return format(date, 'yyyy-MM-dd');
     }
 
-    addProjectBtn.addEventListener('click', createProject);
+    addProjectBtn.addEventListener('click', function(e) {
+        projectForm.classList.add('active')
+        addProjectBtn.classList.remove('active');
+    });
+
+    projectForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const title = this.newProjectTitle.value;
+        createProject(title)
+        projectForm.classList.remove('active');
+        addProjectBtn.classList.add('active');
+    });
 
     return {
     }

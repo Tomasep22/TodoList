@@ -29,10 +29,12 @@ body.edit-task .edit-form {
 
 .myprojects-heading {
     align-self: center;
+    font-size: 1.2em;
 }
 
 .project-icon {
-    flex: 0.1;
+    width: 8%;
+    height: 100%;
 }
 
 .nav-project-btn {
@@ -41,6 +43,8 @@ body.edit-task .edit-form {
     background-color: transparent;
     border: none;
     text-align: start;
+    font-size: 0.8em;
+    cursor: pointer;
 }
 
 .rm-project-btn {
@@ -49,41 +53,69 @@ body.edit-task .edit-form {
     background-color: transparent;
     border: none;
     color: red;
+    font-size: 0.8em;
+    cursor: pointer;
 }
 
 .core-projects {
     display: flex;
     flex-direction: column;
-    margin-top: 10px;
+    padding-top: 10px;
 }
 
 .user-projects {
     display: flex;
     flex-direction: column;
-    margin-top: 10px;
+    padding-top: 10px;
 }
 
 .user-project-nav {
     display: flex;
-    margin-left: 20px;
+    padding-left: 20px;
 }
 
 .core-project-nav {
+    width: 100%;
     display: flex;
-    margin: 5px;
-    margin-left: 20px;
+    padding-top: 10px;
+    padding-left: 20px;
+    background-color: #D0F4DE;
+}
+
+.core-project-nav:hover {
+    background-color: #D0F4DE;
+    background-color: #6bfca0
+}
+
+.user-project-nav:hover {
+    background-color: #6bfca0
+}
+
+.add-project.active {
+    display: block;
+    align-self: center;
+    margin-top: 10px;
+    cursor: pointer;
+    width: 50%;
 }
 
 .add-project {
+    display: none;
+}
+
+.add-project-form {
+    display: none;
+}
+
+.add-project-form.active {
+    display: block;
+    width: 50%;
     align-self: center;
-    margin-top: 10px;
 }
 
-button {
-    max-height: 50px;
-    max-width: 100px;
+.add-project-input {
+    width: 100%;
 }
-
 
 .project {
     flex: 3;
@@ -91,6 +123,7 @@ button {
     background-color: #FCF6BD;
     display: flex;
     flex-direction: column;
+    padding-left: 50px;
 }
 
 
@@ -105,39 +138,72 @@ button {
     align-items: center;
 }
 
+.task-title-date {
+    display: flex;
+    padding-left: 5px;
+    padding-right: 5px;
+    flex: 1;
+    text-align: center;
+}
+
+.task-title {
+    text-align: center;
+    padding-left: 5px;
+}
+
+.task-date{
+    padding-right: 5px;
+    background-color: #b8b1715e;
+    padding-left: 5px;
+}
+
+.task-btns {
+    display: inline;
+    text-align: center;
+    justify-self: center;
+    align-self: center;
+    flex: 1;
+}
+
 .rm-task-btn {
     background-color: transparent;
     border: none;
     color: red;
-    font-size: 25px;
+    font-size: 1em;
+    cursor: pointer;
 }
 
 .edit-task-btn {
     background-color: transparent;
     border: none;
-
-    font-size: 25px;
-}
-
-p {
-    padding-left: 5px;
-    padding-right: 5px;
+    cursor: pointer;
+    font-size: 1em;
 }
 
 .add-task-btn.active {
     display: block;
+    align-self: center;
+    width: 25%;
 }
 
 .add-task-btn {
     display: none;
 }
 
-.add-task-input.active {
-    display: inline;
+.add-task-form.active {
+    display: block;
+    align-self: center;
+    width: 25%;
+}
+
+.add-task-form {
+    display: none;
 }
 
 .add-task-input {
-    display: none;
+    width: 100%;
+    align-self: center;
+    padding-left: 10px;
 }
 
 .edit-form {
