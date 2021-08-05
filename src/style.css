@@ -6,11 +6,15 @@ html {
 
 body {
     margin: 0;
+    background-color: #FCF6BD;;
 }
 
 body.edit-task .edit-form {
     display: flex;
+    visibility: visible;
+    opacity: 1;
 }
+
 
 #content {
     display: flex;
@@ -138,6 +142,25 @@ body.edit-task .edit-form {
     align-items: center;
 }
 
+.task input {
+    display: none;
+}
+
+.task input + div:before {
+    content: "○";
+    margin-right: 10px;
+    align-self: center;
+    font-size: 2em;
+  }
+  
+.task input:checked + div:before {
+    content: "✔";
+}
+
+.task input:checked + div p {
+    text-decoration: line-through;
+}
+
 .task-title-date {
     display: flex;
     padding-left: 5px;
@@ -180,6 +203,12 @@ body.edit-task .edit-form {
     font-size: 1em;
 }
 
+.store-task-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
 .add-task-btn.active {
     display: block;
     align-self: center;
@@ -207,17 +236,24 @@ body.edit-task .edit-form {
 }
 
 .edit-form {
-    display: none;
-    position: absolute;
-    height: 400px;
-    width: 400px;
-    margin: 0 auto;
+    visibility: hidden;
+    opacity: 0;
+    min-height: 100%;
+    width: 300px;
     background-color: #A9DEF9;
     flex-direction: column;
-    left: 40%;
-    top: 20%
+    justify-content: space-around;
+    padding-left: 20px;
+    box-sizing: border-box;
+    padding-right: 20px;
 }
+
 
 .submit-edit-btn {
     align-self: center;
+}
+
+
+.submit-edit-btn  button {
+    cursor: pointer;
 }

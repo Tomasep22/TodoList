@@ -2,6 +2,7 @@ import Events from './events.js'
 import Tasks from './tasks.js'
 import projects from './projects.js'
 import Style from './style.css'
+import Openbox from './img/open-box.png'
 import { format } from 'date-fns'
 
 const domModule = (function() {
@@ -44,6 +45,10 @@ const domModule = (function() {
     const projectDiv = document.createElement('div');
     projectDiv.classList.add('project');
     content.appendChild(projectDiv);
+
+    const editForm = document.createElement('form');
+    editForm.classList.add('edit-form');
+    content.appendChild(editForm);
 
     Events.on('deliverUserProjects', updateUserProjects);
     Events.on('deliverCoreProjects', updateCoreProjects);
@@ -122,19 +127,19 @@ const domModule = (function() {
 
         populateTasks(tasksDiv, project, tasks);
 
-        if(!('addTaskBtn' in project)) addTaskbtn(projectNode, project, tasksDiv);
+        (project.type === 'user' || 'addTaskBtn' in project) ? addTaskbtn(projectNode, project, tasksDiv) : '';
 
     }
 
     populateProject(coreProjects[0], projectDiv);
 
-    function populateTasks(node, project, tasksArr) {
+    function populateTasks(tasksNode, project, tasksArr) {
         updateTasks();
-        node.innerHTML = '';
-        node.innerHTML = tasksArr.map((task, index) => {
+        tasksNode.innerHTML = '';
+        tasksNode.innerHTML = tasksArr.map((task, index) => {
             if(project.displayRule(task) === false) return
             let title = task.title;
-            if(project.type === 'core' && project.title !== 'Inbox') {
+            if(project.type === 'core' && task.project !== project.title) {
                 const taskproject = task.project;
                 title += ' (' + taskproject + ')'
             }
@@ -146,23 +151,33 @@ const domModule = (function() {
             <div class="task-btns">
             <button data-idx="${index}" class="rm-task-btn">❌</button>
             <button data-idx="${index}" class="edit-task-btn">🖉</button>
+            ${(project.type === 'user' || 'storeTaskBtn' in project) ? `<button data-idx="${index}" class="store-task-btn"><img src="${Openbox}"></button>` : ''}
             </div>
             </label>
             `
         }).join('');
 
-        const rmButtons = node.querySelectorAll('.rm-task-btn');
+        const rmButtons = tasksNode.querySelectorAll('.rm-task-btn');
         rmButtons.forEach(btn => btn.addEventListener('click', function(){
             const index = parseInt(this.dataset.idx);
-            const task = tasks.slice()[index]
-            removeTask(task)
-            populateTasks(node, project, tasks);
+            const task = tasks.slice()[index];
+            removeTask(task);
+            populateTasks(tasksNode, project, tasks);
         }));
 
-        const editButtons = node.querySelectorAll('.edit-task-btn');
+        const editButtons = tasksNode.querySelectorAll('.edit-task-btn');
         editButtons.forEach(btn => btn.addEventListener('click', function() {
             const index = parseInt(this.dataset.idx);
-            editTaskForm(tasks.slice()[index], node, project);
+            editTaskForm(tasks.slice()[index], tasksNode, project, editForm);
+        }))
+
+        const storeButtons = tasksNode.querySelectorAll('.store-task-btn');
+        storeButtons.forEach(btn => btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.idx);
+            const task = tasks.slice()[index];
+            const someday = {project: 'Someday'};
+            Events.emit('editTask', task, someday)
+            populateTasks(tasksNode, project, tasks);
         }))
     }
 
@@ -227,9 +242,10 @@ const domModule = (function() {
         document.body.classList.remove('edit-task');
     }
 
-    function editTaskForm(task, node, currentProject) {
-        const editForm = document.createElement('form');
-        editForm.classList.add('edit-form');
+    function editTaskForm(task, tasksNode, currentProject, editForm) {
+        editForm.innerHTML = ''
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => btn.disabled = true);
         document.body.classList.add('edit-task');
         let dateValue = false;
         if('date' in task) dateValue = formatDate(task.date);
@@ -241,10 +257,16 @@ const domModule = (function() {
         <button type="submit" name="submitbtn">Edit</button>
         <button name="cancelbtn">Cancel</button>
         </div>`
-        content.appendChild(editForm);
-        editForm.addEventListener('submit', function(e){
+
+        editForm.addEventListener('submit', editTask);
+
+        function editTask(e) {
             e.preventDefault();
-            if(e.submitter === editForm.cancelbtn) return cancelTaskEdit(editForm)
+            if(e.submitter === editForm.cancelbtn) {
+                buttons.forEach(btn => btn.disabled = false);
+                editForm.removeEventListener('submit', editTask)
+                return cancelTaskEdit(editForm);
+            }
             const title = this.titleinput.value;
             const project = this.projectselect.value;
             let date = this.dateinput.value || null;
@@ -254,15 +276,19 @@ const domModule = (function() {
         } else {
             Events.emit('editTask', task, {title, project});
         }
-            populateTasks(node, currentProject, tasks);
+            populateTasks(tasksNode, currentProject, tasks);
             document.body.classList.remove('edit-task');
-        });
+            buttons.forEach(btn => btn.disabled = false);
+            editForm.removeEventListener('submit', editTask)
+        }
+
     }
+
 
     function populateProjectSelect(projects, current) {
         return projects.map(project => {
             if(project.title === current) return
-            return `<option value=${project.title}>${project.title}</option>`
+            return `<option value="${project.title}">${project.title}</option>`
         }).join('');
     }
 

@@ -5,7 +5,7 @@ import Today from './img/calendar.png'
 import Tomorrow from './img/tomorrow.png'
 import Nextweek from './img/next-week.png'
 import Todolist from './img/to-do-list.png'
-
+import Openbox from './img/open-box.png'
   const projectsModule = (function(){
 
     const COREPROJECTS = [
@@ -19,7 +19,9 @@ import Todolist from './img/to-do-list.png'
           return false
         }
       },
-      type: 'core'
+      type: 'core',
+      storeTaskBtn: true,
+      addTaskBtn: true
     },
     {
       title: 'Today',
@@ -34,8 +36,7 @@ import Todolist from './img/to-do-list.png'
           return false
         }
       },
-      addTaskBtn: false,
-      type: 'core'
+      type: 'core',
     },
     {
       title: 'Tomorrow',
@@ -50,7 +51,6 @@ import Todolist from './img/to-do-list.png'
             return false
           }
         },
-        addTaskBtn: false,
         type: 'core'
     },
     {
@@ -66,9 +66,21 @@ import Todolist from './img/to-do-list.png'
             return false
         }
       },
-      addTaskBtn: false,
       type: 'core'
-    }];
+    },
+    {
+      title:'Someday',
+      icon: Openbox,
+      displayRule: function(task){
+        if(task.project === this.title) {
+          return true 
+        } else {
+          return false
+        }
+      },
+      type: 'core'
+    },
+  ];
 
     let userProjects = [{title: 'project1', icon: Todolist, displayRule: function(task){
       return task.project === this.title ? true : false
