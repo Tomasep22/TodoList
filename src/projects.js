@@ -6,7 +6,51 @@ import Tomorrow from './img/tomorrow.png'
 import Nextweek from './img/next-week.png'
 import Todolist from './img/to-do-list.png'
 import Openbox from './img/open-box.png'
-  const projectsModule = (function(){
+ 
+
+const projectsModule = (function(){
+
+  const projectFactory = (title) => {
+
+    const icon = Todolist
+    const type = 'user'
+    function displayRule(task) {
+      return task.project === this.title ? true : false
+    }
+  
+  const arr = userProjects.slice()
+  
+  function repeat(title) {
+    return arr.reduce((count, project) => {
+      if(project.title === title) count++
+      return count
+    },0);
+  }
+  
+  let count = repeat(title)
+  
+  function updateTitle(projectTitle) {
+    const repeated = repeat(projectTitle)
+    if (repeated < 1) {
+      title = projectTitle
+      return
+    }
+    
+    let newTitle = projectTitle
+    newTitle = title + `(${count})`
+    count++
+    updateTitle(newTitle)
+  }
+  
+  updateTitle(title);
+  
+    return {
+       title,
+       icon,
+       displayRule,
+       type
+    };
+  };
 
     const COREPROJECTS = [
     {
@@ -82,10 +126,16 @@ import Openbox from './img/open-box.png'
     },
   ];
 
-    let userProjects = [{title: 'project1', icon: Todolist, displayRule: function(task){
-      return task.project === this.title ? true : false
-    },
-    type: 'user'}];
+    let userProjects = []
+    
+    const localProjects = JSON.parse(localStorage.getItem('projects')) || []
+    
+    
+   if(localStorage.getItem('projects')) {
+    localProjects.forEach(p => {
+      return addProject(p.title)
+    })
+    }
 
     Events.on('updateCoreProjects', getCoreProjects);
     Events.on('updateUserProjects', getUserProjects);
@@ -105,61 +155,25 @@ import Openbox from './img/open-box.png'
     function addProject (title) {
        const project = projectFactory(title);
        userProjects.push(project);
+       localStorage.setItem('projects', JSON.stringify(userProjects.slice()));
     }
 
     function removeProject(project) {
       const index = userProjects.findIndex(p => p === project);
      userProjects = [...userProjects.slice(0, index), ...userProjects.slice(index + 1)];
+     localStorage.setItem('projects', JSON.stringify(userProjects.slice()));
     }
 
     function gUserProjects() {
       return userProjects.slice()
     }
+
+    
+
   return {
     gUserProjects
   }
 }())
 
-const projectFactory = (title) => {
-
-  const icon = Todolist
-  const type = 'user'
-  function displayRule(task) {
-    return task.project === this.title ? true : false
-  }
-
-const arr = projectsModule.gUserProjects();
-
-function repeat(title) {
-  return arr.reduce((count, project) => {
-    if(project.title === title) count++
-    return count
-  },0);
-}
-
-let count = repeat(title)
-
-function updateTitle(projectTitle) {
-  const repeated = repeat(projectTitle)
-  if (repeated < 1) {
-    title = projectTitle
-    return
-  }
-  
-  let newTitle = projectTitle
-  newTitle = title + `(${count})`
-  count++
-  updateTitle(newTitle)
-}
-
-updateTitle(title);
-
-  return {
-     title,
-     icon,
-     displayRule,
-     type
-  };
-};
 
 export default projectsModule.projects 

@@ -145,7 +145,7 @@ const domModule = (function() {
             }
             return `
             <label class="task" for="task${index}">
-            <input id="task${index}" type="checkbox" name="tasks" value="${task.title}">
+            <input data-idx="${index}" class="task-checkbox" id="task${index}" type="checkbox" name="tasks" value="${task.title}" ${task.done ? 'checked' : ''}/>
             <div class="task-title-date">${'date' in task ? '<p class="task-date">' + task.formatDate() + '</p>' : ''}<p class="task-title" style="display: inline">${title}</p>
             </div>
             <div class="task-btns">
@@ -169,7 +169,7 @@ const domModule = (function() {
         editButtons.forEach(btn => btn.addEventListener('click', function() {
             const index = parseInt(this.dataset.idx);
             editTaskForm(tasks.slice()[index], tasksNode, project, editForm);
-        }))
+        }));
 
         const storeButtons = tasksNode.querySelectorAll('.store-task-btn');
         storeButtons.forEach(btn => btn.addEventListener('click', function() {
@@ -178,6 +178,15 @@ const domModule = (function() {
             const someday = {project: 'Someday'};
             Events.emit('editTask', task, someday)
             populateTasks(tasksNode, project, tasks);
+        }));
+
+        const checkboxes = tasksNode.querySelectorAll('.task-checkbox')
+        checkboxes.forEach(input => input.addEventListener('click', function() {
+        const index = parseInt(this.dataset.idx);
+        const task = tasks.slice()[index];
+        const done = !task.done
+        console.log(done)
+        Events.emit('editTask', task, {done})
         }))
     }
 
