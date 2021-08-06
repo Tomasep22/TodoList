@@ -3,16 +3,20 @@ import projects from './projects.js';
 import { format, parseJSON } from 'date-fns'
 
 
-const taskFactory = (title, project, done = false) => {
+const taskFactory = (title, project, done = false, date = false) => {
 
   function formatDate() {
-    return format(this.date, 'd.MMM')
+    // format date for display
+    if(this.date) return format(this.date, 'd.MMM');
   }
+
+  if(date) date = parseJSON(date)
 
   return {
     title,
     project,
     done,
+    date,
     formatDate
   };
 };
@@ -20,22 +24,14 @@ const taskFactory = (title, project, done = false) => {
 
 const tasksModule = (function(){
 
-    let tasks = []
-    
-    const tasksLocal = JSON.parse(localStorage.getItem('tasks')) || []
-    const items = JSON.parse(localStorage.getItem('item')) || []
-    
-    
+    let tasks = [];
+      
+    // recreate objects from local storage
    if(localStorage.getItem('tasks')) {
-    tasksLocal.forEach(t => {
-      return addTask(t)
+    const tasksLocal = JSON.parse(localStorage.getItem('tasks'))
+    tasksLocal.forEach(task => {
+      return addTask(task);
     })
-    }
-
-    if(localStorage.getItem('item')) {
-        items.dates.forEach((d, idx) => {
-        tasks[items.indexes[idx]].date = parseJSON(d)
-      })
     }
 
   Events.on('updateTasks', deliverTasks);
@@ -47,47 +43,30 @@ const tasksModule = (function(){
     return tasks.slice();
   }
 
+  // send tasks to other modules
   function deliverTasks() {
     Events.emit('deliverTasks', tasks.slice());
   }
 
   function addTask(obj) {
-      const task = taskFactory(obj.title, obj.project, obj.done);
+      const task = taskFactory(obj.title, obj.project, obj.done, obj.date);
       tasks.push(task);
       localStorage.setItem('tasks', JSON.stringify(tasks.slice()));
-      handleLocalStorage()
   }
 
   function removeTask(task) {
     const index = tasks.findIndex(t => t === task);
     tasks = [...tasks.slice(0, index), ...tasks.slice(index + 1)];
-    handleLocalStorage()
+    localStorage.setItem('tasks', JSON.stringify(tasks.slice()));
   }
 
   function handleUpdates(task, obj) {
     const taskIndex = tasks.findIndex(t => t === task);
     Object.assign(tasks[taskIndex], obj);
-    handleLocalStorage()
-  }
-
-  function handleLocalStorage() {
-    const copy = tasks.slice();
-    const dates = []
-    const indexes = []
-    copy.forEach((t,index) => {
-      if('date' in t){
-        console.log(t.date.toString(), index)
-        dates.push(t.date)
-        indexes.push(index);
-      }
-    });
-    const item = {dates, indexes}
-    localStorage.setItem('item', JSON.stringify(item));
     localStorage.setItem('tasks', JSON.stringify(tasks.slice()));
   }
 
   return {
-    getTasks
   }
   
 }())

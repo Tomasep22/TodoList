@@ -20,17 +20,19 @@ const projectsModule = (function(){
   
   const arr = userProjects.slice()
   
-  function repeat(title) {
+  // return number of projects with the same title
+  function getRepetitions(title) {
     return arr.reduce((count, project) => {
       if(project.title === title) count++
       return count
     },0);
   }
   
-  let count = repeat(title)
+  let count = getRepetitions(title)
   
+  // if there is 1 or more projects with the same title, update new project title to be different
   function updateTitle(projectTitle) {
-    const repeated = repeat(projectTitle)
+    const repeated = getRepetitions(projectTitle)
     if (repeated < 1) {
       title = projectTitle
       return
@@ -130,11 +132,11 @@ const projectsModule = (function(){
     
     const localProjects = JSON.parse(localStorage.getItem('projects')) || []
     
-    
+    // recreate objects from local storage
    if(localStorage.getItem('projects')) {
     localProjects.forEach(p => {
-      return addProject(p.title)
-    })
+      return addProject(p.title);
+    });
     }
 
     Events.on('updateCoreProjects', getCoreProjects);
@@ -162,18 +164,11 @@ const projectsModule = (function(){
       const index = userProjects.findIndex(p => p === project);
      userProjects = [...userProjects.slice(0, index), ...userProjects.slice(index + 1)];
      localStorage.setItem('projects', JSON.stringify(userProjects.slice()));
-    }
-
-    function gUserProjects() {
-      return userProjects.slice()
-    }
-
-    
+    }  
 
   return {
-    gUserProjects
   }
-}())
+}());
 
 
 export default projectsModule.projects 

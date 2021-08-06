@@ -11,7 +11,6 @@ const domModule = (function() {
     let coreProjects = [];
     let tasks = [];
 
-    // CONTENT
     const content = document.createElement('div');
     content.id = 'content';
     document.body.appendChild(content);
@@ -98,16 +97,15 @@ const domModule = (function() {
         }));
 
         const rmButtons = node.querySelectorAll('.rm-project-btn')
-        if(rmButtons.length > 0) {
-            rmButtons.forEach(btn => btn.addEventListener('click', function() {
-                const index = parseInt(this.dataset.idx);
-                const deleteProject = projects.slice()[index];
-                removeProject(deleteProject);
-                updateProjects();
-                removeDeletedProjectTasks(deleteProject, tasks)
-                populateNavDiv(node, userProjects);
-            }))
-        }
+        rmButtons.forEach(btn => btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.idx);
+            const deleteProject = projects.slice()[index];
+            removeProject(deleteProject);
+            updateProjects();
+            removeDeletedProjectTasks(deleteProject, tasks)
+            populateNavDiv(node, userProjects);
+            populateProject(userProjects[index - 1] || coreProjects[0], projectDiv)
+        }));
     }
 
     populateNavDiv(coreProjectsDiv, coreProjects);
@@ -137,8 +135,10 @@ const domModule = (function() {
         updateTasks();
         tasksNode.innerHTML = '';
         tasksNode.innerHTML = tasksArr.map((task, index) => {
-            if(project.displayRule(task) === false) return
+            // check if project should display task
+            if(!project.displayRule(task)) return
             let title = task.title;
+            // include project title when task is displayed in a different project than where it is place
             if(project.type === 'core' && task.project !== project.title) {
                 const taskproject = task.project;
                 title += ' (' + taskproject + ')'
@@ -146,7 +146,7 @@ const domModule = (function() {
             return `
             <label class="task" for="task${index}">
             <input data-idx="${index}" class="task-checkbox" id="task${index}" type="checkbox" name="tasks" value="${task.title}" ${task.done ? 'checked' : ''}/>
-            <div class="task-title-date">${'date' in task ? '<p class="task-date">' + task.formatDate() + '</p>' : ''}<p class="task-title" style="display: inline">${title}</p>
+            <div class="task-title-date">${task.date ? '<p class="task-date">' + task.formatDate() + '</p>' : ''}<p class="task-title" style="display: inline">${title}</p>
             </div>
             <div class="task-btns">
             <button data-idx="${index}" class="rm-task-btn">❌</button>
@@ -176,18 +176,17 @@ const domModule = (function() {
             const index = parseInt(this.dataset.idx);
             const task = tasks.slice()[index];
             const someday = {project: 'Someday'};
-            Events.emit('editTask', task, someday)
+            Events.emit('editTask', task, someday);
             populateTasks(tasksNode, project, tasks);
         }));
 
-        const checkboxes = tasksNode.querySelectorAll('.task-checkbox')
+        const checkboxes = tasksNode.querySelectorAll('.task-checkbox');
         checkboxes.forEach(input => input.addEventListener('click', function() {
         const index = parseInt(this.dataset.idx);
         const task = tasks.slice()[index];
-        const done = !task.done
-        console.log(done)
-        Events.emit('editTask', task, {done})
-        }))
+        const done = !task.done;
+        Events.emit('editTask', task, {done});
+        }));
     }
 
     function addTaskbtn(projectNode, project, tasksNode) {
@@ -213,6 +212,7 @@ const domModule = (function() {
             form.classList.remove('active');
             btn.classList.add('active');
             populateTasks(tasksNode, project, tasks);
+            this.reset();
         });
     }
 
@@ -238,6 +238,7 @@ const domModule = (function() {
     }
 
     function removeDeletedProjectTasks(deleted, tasks) {
+        // when a project is removed, remove tasks that belonged to that project
         if(tasks.length > 0) {
         return  tasks.map((task) => {
                 if(task.project !== deleted.title) return
@@ -257,7 +258,7 @@ const domModule = (function() {
         buttons.forEach(btn => btn.disabled = true);
         document.body.classList.add('edit-task');
         let dateValue = false;
-        if('date' in task) dateValue = formatDate(task.date);
+        if(task.date) dateValue = formatDate(task.date);
         editForm.innerHTML = `
         <p>Title: <input type="text" name="titleinput" placeholder="Title" value="${task.title}" required></p>
         <p>Project: <select name="projectselect"><option value="${task.project}">${task.project}</option>${populateProjectSelect(userProjects, task.project)}</select></p>
@@ -271,6 +272,7 @@ const domModule = (function() {
 
         function editTask(e) {
             e.preventDefault();
+            // if user cancels task edition
             if(e.submitter === editForm.cancelbtn) {
                 buttons.forEach(btn => btn.disabled = false);
                 editForm.removeEventListener('submit', editTask)
@@ -279,6 +281,7 @@ const domModule = (function() {
             const title = this.titleinput.value;
             const project = this.projectselect.value;
             let date = this.dateinput.value || null;
+            // check if user included a date
             if(typeof(date) === 'string') {
             date = handleDateInput(date);
             Events.emit('editTask', task, {title, project, date});
@@ -290,7 +293,7 @@ const domModule = (function() {
             buttons.forEach(btn => btn.disabled = false);
             editForm.removeEventListener('submit', editTask)
         }
-
+            this.reset();
     }
 
 
@@ -302,6 +305,9 @@ const domModule = (function() {
     }
 
     function handleDateInput(date) {
+        // browser input date data comes in this format: '2021-08-07' // String
+        // when converting that into a date object the result is from a day before: new Date('2021-08-07') // Fri Aug 06 2021 ...
+        // changing format to '2021,08,07' fixes this: new Date('2021,08,07') // Sat Aug 07 2021 ...
         return new Date(date.replaceAll('-',','));
     }
 
@@ -320,6 +326,7 @@ const domModule = (function() {
         createProject(title)
         projectForm.classList.remove('active');
         addProjectBtn.classList.add('active');
+        this.reset()
     });
 
     return {
