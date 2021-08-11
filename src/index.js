@@ -312,7 +312,7 @@ const domModule = (function () {
     )}</select></p>
         <p>Due-date: <input type="date" name="dateinput" value="${
           dateValue ? dateValue : ""
-        }"></p>
+        } pattern="\d{4}-\d{2}-\d{2}""></p>
         <div class="submit-edit-btn">
         <button type="submit" name="submitbtn">Edit</button>
         <button name="cancelbtn">Cancel</button>
