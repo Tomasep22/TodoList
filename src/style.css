@@ -15,6 +15,11 @@ body.edit-task .edit-form {
     opacity: 1;
 }
 
+header {
+    display: none;
+    opacity: 0;
+    position: absolute;
+}
 
 #content {
     display: flex;
@@ -22,7 +27,7 @@ body.edit-task .edit-form {
     font-size: 3em;
 }
 
-#nav {
+nav {
     flex: 1;
     max-width: 300px;
     background-color: #FCF6BD;
@@ -256,4 +261,182 @@ body.edit-task .edit-form {
 
 .submit-edit-btn  button {
     cursor: pointer;
+}
+
+@media (max-width: 1000px) {
+
+    html {
+        font-size: 80%;
+    }
+
+    body {
+        margin: 0;
+        min-width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #content {
+        flex-direction: column;
+        min-width: 100vw;
+        overflow: hidden;
+    }
+
+    header {
+        display: block;
+        position: relative;
+        opacity: 1;
+        min-width: 100vw;
+        display: flex;
+        background-color: black;
+    }
+
+    .button-nav-open {
+        max-width: 4em;
+        max-height: 4em;
+        text-align: center;
+        font-size: 15em;
+        color: white;
+        background-color: transparent;
+        border: none;
+        padding: 0;
+        padding-left: 50px;
+    }
+
+    nav {
+        max-width: none;
+        min-width: 100vw;
+        display: none;
+        opacity: 0;
+    }  
+
+    .nav-enter {
+        display: flex;
+    }
+    
+    .nav-enter-active {
+        opacity: 1;
+    }
+
+    .project-icon {
+        font-size: 5em;
+        width: 0.5em;
+    }
+
+    .nav-project-btn {
+        font-size: 1.5em;
+        padding-left: 10px;
+        padding-top: 12px;
+    }
+
+    .core-project-nav {
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .myprojects-heading {
+        font-size: 2.2em;
+    }
+
+    .user-projects {
+        flex: 1;
+    }
+
+    .add-project.active {
+        margin-top: 40px;
+        width: 100%;
+        font-size: 2em;
+        flex: 0.5;
+    }
+
+    .add-project-form.active {
+        margin-top: 40px;
+        display: flex;
+        width: 100%;
+        flex: 1;
+    }
+
+    .add-project-input {
+    width: 100%;
+    font-size: 2em;
+    }
+
+    h1 {
+       font-size: 3em;
+       flex: 0.1;
+       max-height: 10vh;
+    }
+
+    .project-tasks {
+        flex: 3;
+        max-height: 60vh;
+        overflow: scroll;
+    }
+
+    .task {
+        font-size: 2em;
+    }
+
+    .store-img {
+        font-size: 2em;
+        width: 2em;
+        height: 2em;
+    }
+
+    .add-task-btn.active {
+        width: 50%;
+        flex: 1;
+        font-size: 2em;
+        max-height: 10vh;
+        margin-top: 30px
+    }
+
+    .add-task-form.active {
+        width: 50%;
+        flex: 1;
+        margin-top: 30px
+    }
+
+    .add-task-input {
+        font-size: 2em;
+        height: 3em;
+    }
+
+    body.edit-task .edit-form {
+        position: absolute;
+        width: 100%;
+        justify-content: flex-start;
+        padding-top: 40px;
+    }
+
+    form.edit-form p {
+        font-size: 3em;
+        margin-bottom: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        max-height: 22vh;
+        margin: 0;
+    }
+
+    form.edit-form > p > input {
+        font-size: 1em;
+    }
+
+    select {
+        font-size: 1em;
+    }
+
+    .submit-edit-btn {
+        flex: 1;
+        max-height: 15vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .submit-edit-btn button {
+        flex: 1;
+        font-size: 2em;
+    }
 }
